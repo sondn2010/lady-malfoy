@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Dracaena Malfoy and The Boy Who Lived — Trình Đọc Truyện Mobile &amp; CSV AJAX</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="theme-dark min-h-screen flex flex-col pb-16 lg:pb-0">
+
+  <!-- Top Reading Scroll Progress Bar -->
+  <div class="fixed top-0 left-0 right-0 h-1 bg-slate-800/80 z-50">
+    <div id="readingProgressBar" class="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400 w-0 transition-all duration-150"></div>
+  </div>
+
+  <!-- Mobile Drawer Backdrop -->
+  <div id="mobileBackdrop" class="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 hidden lg:hidden"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-slate-900/92 border-b border-emerald-500/20 px-3 sm:px-6 lg:px-8 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <button id="btnToggleSidebar" class="lg:hidden px-3 py-2 rounded-xl bg-emerald-950/90 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/70 text-xs font-semibold flex items-center gap-1.5 shrink-0" title="Mở danh sách chương (Phím S)">
+          <span>☰</span>
+          <span>Mục lục</span>
+        </button>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+            <span class="text-[11px] uppercase tracking-widest text-emerald-400 font-semibold truncate">
+              CSV + AJAX Markdown • <span class="js-total-chapters">36 Chương (Năm 1–3)</span>
+            </span>
+          </div>
+          <h1 class="text-sm sm:text-lg font-bold font-serif-display tracking-wide text-white truncate">
+            Dracaena Malfoy &amp; The Boy Who Lived
+          </h1>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Scrollable on small mobile screens) -->
+      <nav class="flex items-center gap-1 bg-slate-800/90 p-1 rounded-xl border border-slate-700 overflow-x-auto no-scrollbar max-w-full">
+        <button id="tabReader" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-emerald-700 text-white shadow whitespace-nowrap">
+          📖 Đọc Truyện
+        </button>
+        <button id="tabCompare" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition text-slate-300 hover:text-white whitespace-nowrap" title="Phím C">
+          ⚖️ Song Song 2 Bản
+        </button>
+        <button id="tabGallery" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition text-slate-300 hover:text-white whitespace-nowrap">
+          🖼️ Ảnh Minh Họa Từng Chương
+        </button>
+        <button id="tabOverview" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition text-slate-300 hover:text-white whitespace-nowrap">
+          🗂️ Quản Lý CSV &amp; File MD
+        </button>
+      </nav>
+
+      <!-- Quick Reading & Shortcut Controls -->
+      <div class="hidden md:flex items-center gap-1.5">
+        <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700 text-xs">
+          <button id="btnFontDec" class="px-2 py-1 hover:bg-slate-700 rounded text-slate-300" title="Giảm cỡ chữ (Phím -)">A-</button>
+          <span id="lblFontSize" class="px-2 text-emerald-400 font-semibold">18px</span>
+          <button id="btnFontInc" class="px-2 py-1 hover:bg-slate-700 rounded text-slate-300" title="Tăng cỡ chữ (Phím +)">A+</button>
+        </div>
+        <button id="btnFontFamily" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition" title="Đổi phông chữ">
+          Chữ: Không chân (Sans)
+        </button>
+        <button id="btnThemeToggle" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 transition" title="Đổi màu nền đọc (Phím T)">
+          🌙 Tối Slytherin
+        </button>
+        <button id="btnFocusMode" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition" title="Chế độ Tập trung (Phím F)">
+          🧘 Tập trung
+        </button>
+        <button id="btnOpenShortcuts" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 transition" title="Bảng phím tắt (Phím ?)">
+          ⌨️ Phím tắt
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section id="heroBanner" class="relative overflow-hidden border-b border-emerald-500/20 bg-gradient-to-b from-emerald-950/60 via-slate-900 to-slate-950">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-5 sm:py-7 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+      <div class="lg:col-span-7 space-y-3">
+        <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
+          <span>🐍 Slytherin × 🦁 Gryffindor</span>
+          <span>•</span>
+          <span>Tác giả: Sergio Xalambrí (sergiodxa)</span>
+          <span>•</span>
+          <span id="csvSourceBadge" class="font-mono text-amber-300">Đang nạp chapters.csv...</span>
+        </div>
+        <h2 class="text-xl sm:text-3xl lg:text-4xl font-bold font-serif-display text-white leading-tight">
+          Dracaena Malfoy và Cậu Bé Sống Sót
+        </h2>
+        <p class="text-xs sm:text-sm lg:text-base text-slate-300 leading-relaxed">
+          Danh sách chương được quản lý tự động qua file <code>chapters.csv</code>, kết hợp gọi <strong>AJAX (<code>fetch</code>)</strong> tới từng file <code>.md</code> và bộ <strong>36 tranh minh họa riêng cho từng chương</strong>. Hỗ trợ vuốt trái/phải chuyển chương trên điện thoại và bộ phím tắt nhanh trên máy tính.
+        </p>
+        <div class="flex flex-wrap items-center gap-2.5 pt-1">
+          <div class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-emerald-500/30">
+            <button id="btnModeDetailed" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-600 text-white shadow transition">
+              📜 Bản Dịch Chi Tiết
+            </button>
+            <button id="btnModeCondensed" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-300 hover:text-white transition">
+              ⚡ Bản Viết Cô Đọng
+            </button>
+          </div>
+          <button id="btnCopyMd" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 transition">
+            📋 Sao chép Markdown (.md)
+          </button>
+        </div>
+      </div>
+      <div class="lg:col-span-5 hidden sm:block">
+        <div class="relative rounded-2xl overflow-hidden border-2 border-emerald-500/30 shadow-2xl">
+          <img id="heroBannerImg" src="images/hero_hogwarts_window.jpg" alt="Dracaena Malfoy and Harry Potter" class="w-full h-48 sm:h-56 object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex items-end p-4">
+            <p class="text-xs text-emerald-200 italic">"Bởi vì phải lòng Harry Potter chưa bao giờ nằm trong kế hoạch của Dracaena Malfoy — và chọn cậu ấy có nghĩa là chọn con người mà cô muốn trở thành."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <div class="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 lg:px-8 py-4 sm:py-6">
+
+    <!-- VIEW 1: READER & SIDEBAR -->
+    <div id="viewReader" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Chapter Sidebar / Mobile Slide-Over Drawer -->
+      <aside id="sidebarPanel" class="lg:col-span-4 xl:col-span-3 bg-slate-900/95 border border-slate-800 lg:rounded-2xl p-4 space-y-3.5 lg:sticky lg:top-16 lg:max-h-[83vh] flex flex-col">
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-xs sm:text-sm uppercase tracking-wider text-emerald-400">Danh Sách Chương (CSV)</h3>
+              <span id="lblReadCount" class="text-[11px] text-slate-400">Đã đọc: 1/36</span>
+            </div>
+            <button id="btnCloseSidebar" class="lg:hidden px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold">
+              ✕ Đóng
+            </button>
+          </div>
+
+          <input id="inpSearchChapter" type="text" placeholder="🔍 Tìm chương (Phím S / /)..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs sm:text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500">
+
+          <!-- Dynamic Year Filter Buttons populated from chapters.csv -->
+          <div id="yearFilterContainer" class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
+          </div>
+        </div>
+
+        <div id="chapterListContainer" class="flex-1 overflow-y-auto custom-scroll space-y-1.5 pr-1">
+          <!-- Dynamically populated from chapters.csv -->
+        </div>
+      </aside>
+
+      <!-- Reading Area -->
+      <main id="mainReaderColumn" class="lg:col-span-8 xl:col-span-9 space-y-6">
+
+        <!-- Single Mode Reader Card -->
+        <div id="singleReaderCard" class="reader-surface border border-slate-800 rounded-2xl shadow-xl overflow-hidden transition-colors">
+          <!-- Chapter Header -->
+          <div class="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 p-4 sm:p-7 border-b border-slate-800">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold uppercase tracking-widest text-emerald-400 mb-2">
+              <span id="chBadgeYear">Năm Thứ Nhất • Chương 01</span>
+              <div class="flex items-center gap-2">
+                <span id="chReadTimeBadge" class="text-[11px] font-normal normal-case text-slate-300 bg-slate-800/80 px-2.5 py-0.5 rounded-full">⏱️ ~5 phút đọc</span>
+                <span id="chBadgeMode" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">📜 Bản Dịch Chi Tiết</span>
+              </div>
+            </div>
+
+            <h2 id="chTitleVi" class="text-xl sm:text-3xl font-bold font-serif-display text-white mb-1 leading-snug"></h2>
+            <p id="chTitleEn" class="text-xs sm:text-sm text-slate-400 italic mb-3"></p>
+
+            <!-- Top Chapter Quick Navigation + File Links -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-800/80 text-xs text-slate-300">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button id="btnTopPrevChapter" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 transition" title="Chương trước (Phím ← / A)">← Trước</button>
+                <button id="btnTopNextChapter" class="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium disabled:opacity-40 transition" title="Chương tiếp (Phím → / D)">Tiếp →</button>
+                <button id="btnBookmarkChapter" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition" title="Đánh dấu chương này (Phím B)">☆ Đánh dấu (B)</button>
+                <span id="ajaxStatusBadge" class="hidden sm:inline-block font-mono text-[11px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/40">AJAX Ready</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span id="chFilePath" class="hidden xl:inline-block font-mono text-[11px] text-amber-300/90 bg-slate-950/70 px-2 py-0.5 rounded border border-slate-800"></span>
+                <a id="btnOpenRawMd" href="#" target="_blank" class="px-2.5 py-1 rounded-lg bg-emerald-800/50 hover:bg-emerald-700/60 text-emerald-200 border border-emerald-500/30 transition">
+                  📄 File .md
+                </a>
+                <a id="btnOpenChapterHtml" href="#" class="px-2.5 py-1 rounded-lg bg-amber-800/40 hover:bg-amber-700/50 text-amber-200 border border-amber-500/30 transition">
+                  🌐 Trang .html
+                </a>
+                <a id="chWattpadLink" href="#" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                  🔗 Wattpad
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chapter Body -->
+          <div id="readerSurface" class="p-4 sm:p-8 lg:p-10">
+            <!-- Bespoke Chapter Illustration -->
+            <figure class="mb-6 sm:mb-8 rounded-2xl overflow-hidden border border-slate-700/60 shadow-lg bg-slate-950/50">
+              <img id="chImage" src="" alt="Minh họa chương" class="w-full h-52 sm:h-80 lg:h-96 object-cover">
+              <figcaption id="chImageCaption" class="p-3 text-xs sm:text-sm text-center opacity-80 italic"></figcaption>
+            </figure>
+
+            <!-- Featured Quote -->
+            <blockquote id="chQuote" class="reader-quote my-5 sm:my-6 p-4 sm:p-5 border-l-4 rounded-r-xl italic font-serif-display text-base sm:text-lg">
+            </blockquote>
+
+            <!-- Story Content Loaded via AJAX from .md file -->
+            <article id="chContent" class="reader-text font-novel-sans leading-relaxed">
+              <div class="animate-pulse text-emerald-400 text-sm">Đang gọi AJAX tải nội dung file Markdown (.md)...</div>
+            </article>
+
+            <!-- Mobile Swipe Hint -->
+            <div class="mt-8 p-3 rounded-xl bg-slate-800/30 border border-slate-700/40 text-center text-xs opacity-75">
+              📱 <strong>Mẹo đọc nhanh:</strong> Vuốt ngang trái/phải trên màn hình điện thoại hoặc nhấn phím <kbd class="shortcut-key">←</kbd> <kbd class="shortcut-key">→</kbd> (<kbd class="shortcut-key">A</kbd> / <kbd class="shortcut-key">D</kbd>) để chuyển chương.
+            </div>
+
+            <!-- Bottom Chapter Navigation -->
+            <div class="mt-6 pt-6 border-t border-slate-700/50 flex flex-wrap items-center justify-between gap-3">
+              <button id="btnPrevChapter" class="px-4 sm:px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition disabled:opacity-40">
+                ← Chương trước
+              </button>
+              <span id="lblBottomProgress" class="text-xs sm:text-sm opacity-75 font-medium">Chương 1 / 36</span>
+              <button id="btnNextChapter" class="px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs sm:text-sm font-semibold shadow transition disabled:opacity-40">
+                Chương tiếp theo →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dual Comparison Mode Card -->
+        <div id="compareReaderCard" class="hidden space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 id="cmpTitle" class="text-lg sm:text-xl font-bold font-serif-display text-white"></h3>
+              <p class="text-xs text-slate-400">Tải song song bằng AJAX từ đường dẫn trong <code>chapters.csv</code></p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnCmpPrev" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium">← Chương trước</button>
+              <button id="btnCmpNext" class="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium">Chương tiếp →</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div class="reader-surface border border-amber-500/30 rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-400">⚡ Phiên Bản 1: Viết Cô Đọng</span>
+                <span id="cmpPath1" class="text-xs font-mono opacity-75"></span>
+              </div>
+              <div id="cmpContentCondensed" class="reader-text text-sm sm:text-base leading-relaxed"></div>
+            </div>
+
+            <div class="reader-surface border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">📜 Phiên Bản 2: Dịch Chi Tiết</span>
+                <span id="cmpPath2" class="text-xs font-mono opacity-75"></span>
+              </div>
+              <div id="cmpContentDetailed" class="reader-text text-sm sm:text-base leading-relaxed"></div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- VIEW 2: CHAPTER-BY-CHAPTER GALLERY -->
+    <div id="viewGallery" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-8 space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-bold font-serif-display text-white">
+          Bộ Sưu Tập Tranh Minh Họa Theo Từng Chương (<span class="js-total-chapters">36 Chương</span>)
+        </h2>
+        <p class="text-xs sm:text-base text-slate-300 leading-relaxed">
+          Mỗi chương đều có một bức tranh minh họa riêng biệt được tạo sát với bối cảnh và diễn biến của chương đó, lưu tại thư mục <code>images/</code> và khai báo trong <code>chapters.csv</code>. Nhấn vào bất kỳ thẻ nào để nhảy tới đọc chương tương ứng.
+        </p>
+      </div>
+
+      <div id="galleryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dynamically rendered from chapters.csv -->
+      </div>
+    </div>
+
+    <!-- VIEW 3: CSV CONFIGURATION & FILE STRUCTURE -->
+    <div id="viewOverview" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-8 space-y-4">
+        <h2 class="text-xl sm:text-2xl font-bold font-serif-display text-white">
+          Cơ Chế Quản Lý Danh Sách Chương Qua <code>chapters.csv</code> &amp; Thư Mục <code>assets/</code>
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Toàn bộ danh sách chương, tiêu đề, đường dẫn file <code>.md</code> và đường dẫn ảnh minh họa đều được đọc động từ file <strong><code>chapters.csv</code></strong>. Các file giao diện và xử lý được tách gọn gàng vào thư mục <strong><code>assets/</code></strong> (<code>assets/style.css</code>, <code>assets/app.js</code>, <code>assets/chapter_reader.js</code>).
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm">
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-emerald-500/30 space-y-1.5">
+            <div class="font-bold text-emerald-400">1. Thêm file Markdown (.md)</div>
+            <p class="text-slate-300">Đặt file chương mới vào <code>01_phien_ban_co_dong/</code> và <code>02_phien_ban_chi_tiet/</code>.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-amber-500/30 space-y-1.5">
+            <div class="font-bold text-amber-400">2. Thêm ảnh minh họa (.jpg)</div>
+            <p class="text-slate-300">Đặt bức ảnh minh họa của chương mới vào thư mục <code>images/</code>.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-sky-500/30 space-y-1.5">
+            <div class="font-bold text-sky-400">3. Thêm 1 dòng vào chapters.csv</div>
+            <p class="text-slate-300">Web sẽ tự động cập nhật tổng số chương, bộ lọc Năm học, mục lục và thư viện ảnh mà không cần sửa code HTML/JS.</p>
+          </div>
+        </div>
+
+        <!-- Quick CSV Row Generator Tool -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 space-y-3">
+          <h3 class="text-sm sm:text-base font-bold text-emerald-300">➕ Công Cụ Tạo Nhanh Dòng CSV Cho Chương Tiếp Theo</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+            <input id="inpNewNum" type="number" placeholder="Số chương (VD: 37)" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white">
+            <input id="inpNewYear" type="number" placeholder="Năm học (VD: 4)" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white">
+            <input id="inpNewSlug" type="text" placeholder="Slug (VD: chuong_37_the_goblet)" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white">
+            <input id="inpNewVi" type="text" placeholder="Tên tiếng Việt (VD: Năm Tư: Chiếc Cốc Lửa)" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white">
+            <input id="inpNewEn" type="text" placeholder="Tên tiếng Anh (VD: Fourth Year: The Goblet)" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white">
+            <input id="inpNewCap" type="text" placeholder="Chú thích ảnh minh họa..." class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-white">
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="inpNewQuote" type="text" placeholder="Câu trích dẫn tiêu biểu của chương..." class="flex-1 px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white">
+            <button id="btnGenerateCsvRow" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shrink-0">
+              ⚡ Tạo &amp; Copy dòng CSV
+            </button>
+          </div>
+          <input id="csvRowOutput" type="text" readonly placeholder="Dòng CSV chuẩn sẽ hiện tại đây để bạn dán vào cuối file chapters.csv..." class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-amber-300">
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-slate-950 text-emerald-400 border-b border-slate-800">
+                <th class="p-3 font-semibold">Chương</th>
+                <th class="p-3 font-semibold">Tiêu Đề (Từ chapters.csv)</th>
+                <th class="p-3 font-semibold">File Ảnh</th>
+                <th class="p-3 font-semibold">Đường Dẫn File .md</th>
+                <th class="p-3 font-semibold text-right">Đọc Thử</th>
+              </tr>
+            </thead>
+            <tbody id="tableFilesBody" class="divide-y divide-slate-800/80">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Mobile Quick Typography & Theme Sheet -->
+  <div id="mobSettingsSheet" class="lg:hidden fixed bottom-14 left-2 right-2 z-50 hidden bg-slate-900/98 border border-emerald-500/40 rounded-2xl p-4 shadow-2xl space-y-3 text-xs">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+      <span class="font-bold text-emerald-400 uppercase tracking-wider">Tùy Chỉnh Đọc Truyện Mobile</span>
+      <button onclick="document.getElementById('mobSettingsSheet').classList.add('hidden')" class="text-slate-400 hover:text-white">✕ Đóng</button>
+    </div>
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-slate-300">Cỡ chữ hiển thị:</span>
+      <div class="flex items-center gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="mobFontDec" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-bold">A-</button>
+        <span id="lblMobFontSize" class="px-2 text-emerald-400 font-bold">18px</span>
+        <button id="mobFontInc" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white font-bold">A+</button>
+      </div>
+    </div>
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-slate-300">Màu nền bảo vệ mắt:</span>
+      <button id="mobThemeToggle" class="px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-200 font-semibold">
+        🎨 Đổi màu nền (Tối / Giấy Cổ / Sepia)
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Sticky Bottom Navigation Bar -->
+  <nav id="mobileBottomBar" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 px-2 py-2 flex items-center justify-around text-xs">
+    <button id="mobBtnPrev" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-200 font-medium disabled:opacity-40">← Trước</button>
+    <button id="mobBtnToc" class="px-3 py-1.5 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-semibold">
+      ☰ <span id="mobChapterLabel">Ch.01</span>
+    </button>
+    <button id="mobBtnMode" class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-amber-300 font-medium">📜 Chi tiết</button>
+    <button id="mobBtnSettings" class="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-200 font-medium">Aa Nền</button>
+    <button id="mobBtnNext" class="px-3 py-1.5 rounded-xl bg-emerald-700 text-white font-semibold disabled:opacity-40">Tiếp →</button>
+  </nav>
+
+  <!-- Floating Back-to-Top Button -->
+  <button id="btnBackToTop" class="hidden fixed bottom-20 lg:bottom-6 right-4 z-40 w-10 h-10 rounded-full bg-emerald-700/90 hover:bg-emerald-600 text-white shadow-xl border border-emerald-400/40 flex items-center justify-center text-sm font-bold transition" title="Lên đầu trang">
+    ↑
+  </button>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcutsModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div id="shortcutsBackdrop" class="fixed inset-0 bg-black/75 backdrop-blur-xs"></div>
+    <div class="relative z-10 max-w-lg w-full bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold font-serif-display text-white">⌨️ Hệ Thống Phím Tắt &amp; Cử Chỉ Đọc Nhanh</h3>
+        <button id="btnCloseShortcuts" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">✕ Đóng (Esc)</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm">
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Chương trước</span>
+          <span><kbd class="shortcut-key">←</kbd> <kbd class="shortcut-key">A</kbd> <kbd class="shortcut-key">J</kbd></span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Chương tiếp theo</span>
+          <span><kbd class="shortcut-key">→</kbd> <kbd class="shortcut-key">D</kbd> <kbd class="shortcut-key">K</kbd></span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Đổi Chi tiết ↔ Cô đọng</span>
+          <kbd class="shortcut-key">M</kbd>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">So sánh song song 2 bản</span>
+          <kbd class="shortcut-key">C</kbd>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Chế độ Tập trung (Zen)</span>
+          <kbd class="shortcut-key">F</kbd>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Đổi màu nền đọc</span>
+          <kbd class="shortcut-key">T</kbd>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Tìm kiếm chương</span>
+          <span><kbd class="shortcut-key">S</kbd> <kbd class="shortcut-key">/</kbd></span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Đánh dấu chương (Bookmark)</span>
+          <kbd class="shortcut-key">B</kbd>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Tăng / Giảm cỡ chữ</span>
+          <span><kbd class="shortcut-key">+</kbd> <kbd class="shortcut-key">-</kbd></span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <span class="text-slate-300">Mở bảng phím tắt</span>
+          <span><kbd class="shortcut-key">?</kbd> <kbd class="shortcut-key">H</kbd></span>
+        </div>
+      </div>
+      <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-200">
+        📱 <strong>Trên điện thoại:</strong> Vuốt sang trái để qua chương tiếp theo, vuốt sang phải để lùi về chương trước, và hệ thống tự động nhớ vị trí đoạn đang đọc dở của từng chương.
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-16 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-xl bg-emerald-800/95 text-white text-xs sm:text-sm font-medium shadow-2xl border border-emerald-400/40 whitespace-nowrap">
+  </div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
